@@ -76,7 +76,7 @@ import starling.utils.AssetManager;
 			remove = true;
 			trace("in filledinuser function" + " " + data);
 			userinfo = data;
-			dispatchEventWith(Event.COMPLETE);
+			this.dispatchEventWith(Event.COMPLETE, true, userinfo);
 			trace(userinfo);
 			nav.clearScreen();
 			nav.showScreen(GAME);

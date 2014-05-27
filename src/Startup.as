@@ -25,6 +25,7 @@ package
 	
 	import starling.core.Starling;
 	import starling.events.EnterFrameEvent;
+	import starling.events.Event;
 	
 	
 	[SWF(width="640", height="960", frameRate="30", backgroundColor="#00FFFF")]
@@ -39,7 +40,7 @@ package
 		private var game:Game;
 		private var login:Login;
 		
-		private function actionHandler(e:Event, data:String):void {
+		private function actionHandler(e:flash.events.Event, data:String):void {
 			trace("Object being sent: " + " " + data);
 			send(data);
 		}
@@ -65,7 +66,6 @@ package
 			stage.align = StageAlign.TOP_LEFT;
 			
 			mStarling.addEventListener(starling.events.Event.ROOT_CREATED, onAdded);
-			addEventListener(Event.COMPLETE, sendOut);
 		}
 		
 		/*private function pok(obj:Object):void {
@@ -76,8 +76,9 @@ package
 			}
 		}*/
 		
-		private function sendOut():void {
-			send(String(game.getUserInfo()));
+		private function sendOut(e:starling.events.Event, data:String):void {
+			send(data);
+			trace("Sending info: " + " " + data);
 		}
 		
 		private function checkForScore(Event):void {
@@ -85,7 +86,6 @@ package
 				trace("Made it to score check:" + " " + game.getScore());
 				send(int(game.getScore()));
 				game.removeEventListener(EnterFrameEvent.ENTER_FRAME, checkForScore);
-				trace("Sending info: " + " " + String(game.getUserInfo()));
 			}
 		}
 		
@@ -93,6 +93,7 @@ package
 			MonsterDebugger.trace(this, "Root created");
 			game = (Starling.current.root as Game);
 			game.addEventListener(EnterFrameEvent.ENTER_FRAME, checkForScore);
+			game.addEventListener(starling.events.Event.COMPLETE, sendOut);
 		}
 		
 		private function createSocket():void {
