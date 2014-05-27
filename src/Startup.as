@@ -2,12 +2,17 @@ package
 {
 
 	import com.demonsters.debugger.MonsterDebugger;
+	import com.gamua.flox.Flox;
+	import com.gamua.flox.Player;
 	
 	import flash.display.Sprite;
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
-
+	import flash.events.Event;
 	import flash.system.Security;
+	
+	import Classes.CustomDispatcher;
+	import Classes.Login;
 	
 	import Game;
 	
@@ -22,18 +27,29 @@ package
 	import starling.events.EnterFrameEvent;
 	
 	
-	[SWF(width="640", height="960", frameRate="30", backgroundColor="#FFFFFF")]
+	[SWF(width="640", height="960", frameRate="30", backgroundColor="#00FFFF")]
 	public class Startup extends Sprite
-	{		
+	{
+		private var dispatcher:CustomDispatcher = new CustomDispatcher();
+		
 		private var mStarling:Starling;
 		
 		private var _socketIOTransportFactory:ISocketIOTransportFactory = new SocketIOTransportFactory();
 		private var _ioSocket:ISocketIOTransport;
 		private var game:Game;
+		private var login:Login;
+		
+		private function actionHandler(e:Event, data:String):void {
+			trace("Object being sent: " + " " + data);
+			send(data);
+		}
 		
 		public function Startup()
 		{
+			//Flox.init("nuVUAegs8Z2S7s1Z", "TyGTOwk0gogKLbNH", "0.9");			
+			
 			Security.loadPolicyFile("xmlsocket://127.0.0.1:10843");
+			//dispatcher.addEventListener('pok', pok);
 			
 			createSocket();
 			MonsterDebugger.initialize(this);
@@ -49,6 +65,19 @@ package
 			stage.align = StageAlign.TOP_LEFT;
 			
 			mStarling.addEventListener(starling.events.Event.ROOT_CREATED, onAdded);
+			addEventListener(Event.COMPLETE, sendOut);
+		}
+		
+		/*private function pok(obj:Object):void {
+			//if (obj == true) {
+			//}
+			else {
+				dispatcher.doAction4();
+			}
+		}*/
+		
+		private function sendOut():void {
+			send(String(game.getUserInfo()));
 		}
 		
 		private function checkForScore(Event):void {
@@ -56,6 +85,7 @@ package
 				trace("Made it to score check:" + " " + game.getScore());
 				send(int(game.getScore()));
 				game.removeEventListener(EnterFrameEvent.ENTER_FRAME, checkForScore);
+				trace("Sending info: " + " " + String(game.getUserInfo()));
 			}
 		}
 		
@@ -91,11 +121,11 @@ package
 		{
 			if (event.message is String)
 			{
-				MonsterDebugger.trace(this, String(event.message));
+				trace(event.message);
 			}
 			else
 			{
-				MonsterDebugger.trace(this, JSON.stringify(event.message));
+				trace(JSON.stringify(event.message));
 			}
 		}
 		public function send(data:Object):void

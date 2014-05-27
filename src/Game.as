@@ -1,13 +1,25 @@
 package
 {
 
+import com.gamua.flox.Player;
+
 import flash.geom.Point;
 
+import Classes.CustomDispatcher;
 import Classes.EmbeddedAssets;
+import Classes.GameScreen;
+import Classes.Login;
+import Classes.Password;
+
+import feathers.controls.ScreenNavigator;
+import feathers.controls.ScreenNavigatorItem;
+import feathers.controls.TextInput;
+import feathers.events.FeathersEventType;
 
 import starling.display.Image;
 import starling.display.Sprite;
 import starling.events.EnterFrameEvent;
+import starling.events.Event;
 import starling.events.Touch;
 import starling.events.TouchEvent;
 import starling.events.TouchPhase;
@@ -20,86 +32,58 @@ import starling.utils.AssetManager;
 		public var img2:Image;
 		private var paused2:Boolean = false;
 		private var counter:int = 0;
+		private var currentPlayer:Player;
+		private var nav:ScreenNavigator = new ScreenNavigator();
+		private var nav2:ScreenNavigator = new ScreenNavigator();
+		private var userinfo:String;
+		
+		private static const LOGIN:String = "login";
+		private static const GAME:String = "game";
+		private static const SUBMIT:String = "submit";
+		private static const PW:String = "password";
+		
+		private var remove:Boolean = false;
+		
+		//private var userinput:ScreenNavigatorItem = new ScreenNavigatorItem(new Login, {complete: filledinuser});
+		//var userpw:ScreenNavigatorItem = new ScreenNavigatorItem(new Password, null);
+		//private var game:ScreenNavigatorItem = new ScreenNavigatorItem(new GameScreen/*, {added: redo}*/);
 		
 		public function Game() 
 		{	
-			var assets:AssetManager = new AssetManager();
-			assets.verbose = true;
-			assets.enqueue(EmbeddedAssets);
-			
-			assets.loadQueue(function(ratio:Number):void
-			{
-				trace("Loading assets, progress:", ratio);
-				
-				if (ratio == 1.0) {
-					var texture:Texture = assets.getTexture("Avatarpic");
-					var texture2:Texture = assets.getTexture("Enemypic");
-					
-					img = new Image(texture);
-					img.x = 200;
-					img.y = 300;
-					
-					img2 = new Image(texture2);
-					img2.x = 320;
-					img2.y = 480;
-					
-					addChild(img);
-					addChild(img2);
-					
-					img.addEventListener(TouchEvent.TOUCH, onTouch);
-					addEventListener(EnterFrameEvent.ENTER_FRAME, doCounter);
-				}
-			});
+			addEventListener(Event.ADDED_TO_STAGE, init);
 		}
 		
-		private function doCounter():void {
-			counter++;
-		}
-		
-		private function onTouch(e:TouchEvent):void
-		{						
-			var touch:Touch = e.getTouch(this);
+		private function init():void {
 			
-			if (touch.phase == TouchPhase.BEGAN) {
-				trace("you touched it");
-				/*stage.color = 0xff0000;
-				paused2 = true;*/
-				addEventListener(EnterFrameEvent.ENTER_FRAME, withImage);
-			}
-			if (touch.phase == TouchPhase.MOVED) {
-				trace("moving");
-				var p1:Point = new Point(img.x, img.y);
-				var p2:Point = new Point(img2.x, img2.y);
-				
-				var distance:Number = Point.distance(p1, p2);
-				var radius1:Number = img.width / 2;
-				var radius2:Number = img2.width / 2;
-				
-				if (distance < radius1 + radius2) {
-					trace("enemy has been touched");
-					stage.color = 0xff0000;
-					img.removeEventListener(TouchEvent.TOUCH, onTouch);
-					removeEventListener(EnterFrameEvent.ENTER_FRAME, doCounter);
-					paused2 = true;
-				}
-			}
-			if (touch.phase == TouchPhase.ENDED) {
-				removeEventListener(EnterFrameEvent.ENTER_FRAME, withImage);
-			}
-			/*if (touch3.phase == TouchPhase.ENDED && paused2) {
-			removeEventListener(EnterFrameEvent.ENTER_FRAME, withImage);
-			image2.removeEventListener(TouchEvent.TOUCH, onTouch);
-			
-			}*/
-			
-			function withImage():void {
-				img.x = touch.globalX;
-				img.y = touch.globalY;
-			}
+			addChild(nav);
+			//addChild(nav2);
+			nav.addScreen(LOGIN, new ScreenNavigatorItem(new Login, {complete: filledinuser}));
+			nav.addScreen(GAME, new ScreenNavigatorItem(new GameScreen/*, {added: redo}*/));
+			nav.showScreen(LOGIN);
 		}
 		
 		public function getIsOver():Boolean {
 			return paused2;
+		}
+		
+		/*private function redo():void {
+			if(remove) {
+				nav.removeScreen(LOGIN);
+			}
+		}*/
+		
+		private function filledinuser(e:Event, data:String):void {
+			remove = true;
+			trace("in filledinuser function" + " " + data);
+			userinfo = data;
+			dispatchEventWith(Event.COMPLETE);
+			trace(userinfo);
+			nav.clearScreen();
+			nav.showScreen(GAME);
+		}
+		
+		public function getUserInfo():String {
+			return userinfo;
 		}
 		
 		public function getScore():int {
